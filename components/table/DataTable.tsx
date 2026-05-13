@@ -10,7 +10,7 @@ import {
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
-
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -25,11 +25,13 @@ import { decryptKey } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  day?: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  day = 0,
 }: DataTableProps<TData, TValue>) {
   const encryptedKey =
     typeof window !== "undefined"
@@ -97,35 +99,21 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
       <div className="table-actions">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-          className="shad-gray-btn"
+        <Link
+          href={`/admin?day=${day + 1}`}
+          className="rounded-md border border-dark-400 px-4 py-2"
         >
-          <Image
-            src="/assets/icons/arrow.svg"
-            width={24}
-            height={24}
-            alt="arrow"
-          />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-          className="shad-gray-btn"
-        >
-          <Image
-            src="/assets/icons/arrow.svg"
-            width={24}
-            height={24}
-            alt="arrow "
-            className="rotate-180"
-          />
-        </Button>
+          ←
+        </Link>
+
+        {day > 0 && (
+          <Link
+            href={`/admin?day=${day - 1}`}
+            className="rounded-md border border-dark-400 px-4 py-2"
+          >
+            →
+          </Link>
+        )}
       </div>
     </div>
   );
