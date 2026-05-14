@@ -4,7 +4,8 @@ export const UserFormValidation = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be at most 50 characters"),
+    .max(50, "Name must be at most 50 characters")
+    .regex(/^[\p{L}\s]+$/u, "Name should contain letters only"),
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
@@ -15,7 +16,8 @@ export const PatientFormValidation = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
-    .max(50, "Name must be at most 50 characters"),
+    .max(50, "Name must be at most 50 characters")
+    .regex(/^[\p{L}\s]+$/u, "Name should contain letters only"),
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
@@ -29,11 +31,13 @@ export const PatientFormValidation = z.object({
   occupation: z
     .string()
     .min(2, "Occupation must be at least 2 characters")
-    .max(500, "Occupation must be at most 500 characters"),
+    .max(500, "Occupation must be at most 500 characters")
+    .regex(/^[\p{L}\s]+$/u, "It should contain letters only"),
   emergencyContactName: z
     .string()
     .min(2, "Contact name must be at least 2 characters")
-    .max(50, "Contact name must be at most 50 characters"),
+    .max(50, "Contact name must be at most 50 characters")
+    .regex(/^[\p{L}\s]+$/u, "Name should contain letters only"),
   emergencyContactNumber: z
     .string()
     .refine(
@@ -44,7 +48,8 @@ export const PatientFormValidation = z.object({
   insuranceProvider: z
     .string()
     .min(2, "Insurance name must be at least 2 characters")
-    .max(50, "Insurance name must be at most 50 characters"),
+    .max(50, "Insurance name must be at most 50 characters")
+    .regex(/^[\p{L}\s]+$/u, "It should contain letters only"),
   insurancePolicyNumber: z
     .string()
     .min(2, "Policy number must be at least 2 characters")

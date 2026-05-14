@@ -6,44 +6,40 @@ import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/DataTable";
 import { getRecentAppointmentList } from "@/lib/actions/appointment.actions";
 
-const AdminPage = async ({ searchParams }: SearchParamProps) => {
+const AdminPage = async ({
+  searchParams,
+}: {
+  searchParams: { filter?: string };
+}) => {
   const appointments = await getRecentAppointmentList();
+  const filter = searchParams.filter || "default";
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
 
-  const day = Number(searchParams.day || 0);
+  let displayData = appointments.documents;
 
-  const selectedDate = new Date();
-  selectedDate.setDate(selectedDate.getDate() - day);
-
-  const selectedDayAppointments = appointments.documents.filter(
-    (appointment: any) => {
-      const appointmentDate = new Date(appointment.schedule);
-
-      return (
-        appointmentDate.getDate() === selectedDate.getDate() &&
-        appointmentDate.getMonth() === selectedDate.getMonth() &&
-        appointmentDate.getFullYear() === selectedDate.getFullYear()
-      );
-    }
-  );
-
-  const scheduledCount = selectedDayAppointments.filter(
-    (appointment: any) => appointment.status === "scheduled"
-  ).length;
-
-  const pendingCount = selectedDayAppointments.filter(
-    (appointment: any) => appointment.status === "pending"
-  ).length;
-
-  const cancelledCount = selectedDayAppointments.filter(
-    (appointment: any) => appointment.status === "cancelled"
-  ).length;
-
-  const formattedDate = selectedDate.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (filter === "scheduled") {
+    displayData = appointments.documents.filter(
+      (app: any) => app.status === "scheduled"
+    );
+  } else if (filter === "pending") {
+    displayData = appointments.documents.filter(
+      (app: any) => app.status === "pending"
+    );
+  } else if (filter === "cancelled") {
+    displayData = appointments.documents.filter(
+      (app: any) => app.status === "cancelled"
+    );
+  } else {
+    // DEFAULT VIEW: Only appointments scheduled or pending for TODAY.
+    displayData = appointments.documents.filter((app: any) => {
+      const appDate = new Date(app.schedule);
+      const isToday = appDate >= todayStart && appDate <= todayEnd;
+      return isToday && app.status !== "cancelled";
+    });
+  }
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col space-y-14">
@@ -63,36 +59,56 @@ const AdminPage = async ({ searchParams }: SearchParamProps) => {
 
       <main className="admin-main">
         <section className="w-full space-y-4">
-          <h1 className="header">Welcome 👋</h1>
+          <h1 className="header">Welcome 🙋‍♀️</h1>
           <p className="text-dark-700">
-            Showing appointments for {formattedDate}
+            Let's start the day with managing new appointments
           </p>
         </section>
 
         <section className="admin-stat">
-          <StatCard
-            type="appointments"
-            count={scheduledCount}
-            label="Scheduled appointments"
-            icon={"/assets/icons/appointments.svg"}
-          />
+          <h2 className="sub-header text-white">
+            {filter === "default"
+              ? "Today's Appointments"
+              : `${filter.charAt(0).toUpperCase() + filter.slice(1)} Appointments`}
+          </h2>
 
-          <StatCard
-            type="pending"
-            count={pendingCount}
-            label="Pending appointments"
-            icon={"/assets/icons/pending.svg"}
-          />
+          {filter !== "default" && (
+            <Link
+              href="/admin"
+              className="text-14-medium text-green-500 hover:underline"
+            >
+              &larr; Clear Filters
+            </Link>
+          )}
+          <Link href="/admin?filter=scheduled" className="w-full">
+            <StatCard
+              type="appointments"
+              count={appointments.scheduledCount}
+              label="Scheduled appointments"
+              icon={"/assets/icons/appointments.svg"}
+            />
+          </Link>
 
-          <StatCard
-            type="cancelled"
-            count={cancelledCount}
-            label="Cancelled appointments"
-            icon={"/assets/icons/cancelled.svg"}
-          />
+          <Link href="/admin?filter=pending" className="w-full">
+            <StatCard
+              type="pending"
+              count={appointments.pendingCount}
+              label="Pending appointments"
+              icon={"/assets/icons/pending.svg"}
+            />
+          </Link>
+
+          <Link href="/admin?filter=cancelled" className="w-full">
+            <StatCard
+              type="cancelled"
+              count={appointments.cancelledCount}
+              label="Cancelled appointments"
+              icon={"/assets/icons/cancelled.svg"}
+            />
+          </Link>
         </section>
 
-        <DataTable columns={columns} data={selectedDayAppointments} day={day} />
+        <DataTable columns={columns} data={displayData} />
       </main>
     </div>
   );
